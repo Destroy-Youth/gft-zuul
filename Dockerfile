@@ -1,5 +1,11 @@
-FROM java:8
-EXPOSE 8101 
-ADD build/libs/zuul-0.0.1-SNAPSHOT.jar zuul-0.0.1-SNAPSHOT.jar
-ENTRYPOINT [ "java", "-jar", "zuul-0.0.1-SNAPSHOT.jar" ]
 
+FROM gradle:jdk8 as builder
+COPY --chown=gradle:gradle . /home/gradle/src
+WORKDIR /home/gradle/src
+RUN gradle build --no-daemon 
+
+
+FROM java:8
+EXPOSE 8101
+COPY --from=builder /home/gradle/src/build/libs/*.jar /app/spring-boot-application.jar
+ENTRYPOINT [ "java", "-jar", "/app/spring-boot-application.jar" ]
